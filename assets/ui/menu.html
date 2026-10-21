@@ -1,0 +1,42 @@
+<if condition="{show_menu}">
+  <div class="menu-root">
+    <div class="grid {grid_accent}" style="opacity: {grid_opacity};">
+      <for each="{grid_rows}" as="g"><div class="g {g.cls}" data-cell-ink="{g.ink}" style="left: {g.x}; top: {g.y}; width: {g.width};">{g.text}</div></for>
+    </div>
+    <div class="menu-center">
+      <div class="menu-card">
+        <div class="brand"><span class="logo">◆</span><span>kenzo</span></div>
+
+        <div class="mi {menu_cls0}" onclick="MenuPick(0)">
+          <span class="mi-icon">{menu_icon0}</span><span class="mi-label">localhost</span>
+          <span class="mi-note {menu_note_cls0}">{menu_note0}</span>
+        </div>
+
+        <div class="mi {menu_cls1}" onclick="MenuPick(1)">
+          <span class="mi-icon">{menu_icon1}</span>
+          <if condition="{lan_editing}">
+            <span class="mi-label"><span>{lan_before}</span><span class="cursor">{lan_under}</span><span>{lan_after}</span></span>
+          </if>
+          <if condition="{lan_idle}"><span class="mi-label">enter ip</span></if>
+          <span class="mi-note {menu_note_cls1}">{menu_note1}</span>
+        </div>
+
+        <div class="rule">{menu_rule}</div>
+
+        <for each="{menu_sessions}" as="s">
+          <div class="mi {s.cls}" onclick="MenuSession({$index})">
+            <span class="mi-icon">{s.icon}</span><span class="mi-label">{s.when}</span>
+            <span class="mi-note">{s.info}</span><span class="badge">{s.badge}</span>
+          </div>
+        </for>
+        <if condition="{menu_no_sessions}"><div class="mi"><span class="mi-icon"></span><span class="mi-label dim">no sessions yet</span></div></if>
+        <div class="mi {menu_cls_more}" onclick="MenuPick(5)">
+          <span class="mi-icon">/</span><span class="mi-label">more sessions</span><span class="mi-note">{menu_more_count}</span>
+        </div>
+
+        <div class="menu-err">{menu_error}</div>
+        <div class="menu-hint">{menu_hint}</div>
+      </div>
+    </div>
+  </div>
+</if>

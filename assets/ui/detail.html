@@ -1,0 +1,35 @@
+<if condition="{show_detail}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dv" style="width: {dv_w}; height: {dv_h};" onclick="Inside">
+      <div class="dv-head">
+        <span class="dv-bar {dv_bar_cls}"> </span>
+        <span class="dv-sev {dv_sev_cls}">{dv_sev}</span><span class="dv-sink">{dv_sink}</span>
+        <span class="grow"></span><span class="dim">{dv_pos}</span><span class="d-x" onclick="CloseOverlay">×</span>
+      </div>
+      <div class="dv-meta"><span>time </span><span class="v">{dv_time}</span><span>file </span><span class="v">{dv_file}</span></div>
+      <div class="dv-panes {dv_layout}">
+        <div class="pane {dv_msg_focus}" style="width: {dv_lw}; height: {dv_lh};" onclick="FocusPane(0)">
+          <div class="pane-body">
+            <div class="pane-text"><for each="{dv_msg_lines}" as="l"><div class="pl {l.cls}">{l.text}</div></for></div>
+            <div class="pbar"><for each="{dv_msg_bar}" as="c"><div class="sbc {c.cls}" onclick="PaneBarMsg({$index})"> </div></for></div>
+          </div>
+        </div>
+        <if condition="{dv_has_bt}">
+          <div class="pane {dv_bt_focus}" style="width: {dv_rw}; height: {dv_rh};" onclick="FocusPane(1)">
+            <div class="pane-title">Backtrace · {dv_bt_count} frames</div>
+            <div class="pane-body">
+              <div class="pane-text"><for each="{dv_bt_lines}" as="l"><div class="pl {l.cls}">{l.text}</div></for></div>
+              <div class="pbar"><for each="{dv_bt_bar}" as="c"><div class="sbc {c.cls}" onclick="PaneBarBt({$index})"> </div></for></div>
+            </div>
+          </div>
+        </if>
+      </div>
+      <div class="dv-btns">
+        <span class="btn {dv_bt_btn_cls}" onclick="DetailCopyBacktrace">Copy backtrace <span class="dim">yb</span></span>
+        <span class="btn" onclick="DetailCopyMessage">Copy message <span class="dim">ym</span></span>
+        <span class="btn" onclick="DetailCopy">Copy <span class="dim">yy</span></span>
+        <span class="btn primary" onclick="CloseOverlay">Close</span>
+      </div>
+    </div>
+  </div>
+</if>

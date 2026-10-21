@@ -1,0 +1,46 @@
+self { width: 100%; height: 100%; background-color: var(--bg1); color: var(--text); }
+.app { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+@keyframes pop { from { opacity: 0; translate: 0 1; } to { opacity: 1; translate: 0 0; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes flash { from { background-color: var(--bg4); } to { background-color: var(--bg1); } }
+
+.cursor { background-color: var(--text); color: var(--bg1); }
+.dim { color: var(--muted); }
+.grow { flex-grow: 1; }
+
+.menu-root { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg1); }
+.grid { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.g { position: absolute; height: 1; white-space: nowrap; overflow: hidden; }
+.g0 { color: var(--bg2); } .g1 { color: var(--flow1); } .g2 { color: var(--flow2); } .g3 { color: var(--flow3); }
+.g4 { color: var(--flow4); } .g5 { color: var(--flow5); } .g6 { color: var(--flow6); }
+.accent-red { --accent: var(--red); --flow1: #2e121a; --flow2: #4d1223; --flow3: #76132f; --flow4: #a5143e; --flow5: #d9154d; --flow6: #ff457a; }
+.accent-green { --accent: var(--green); --flow1: #102e17; --flow2: #0e4d1d; --flow3: #0a7525; --flow4: #07a52e; --flow5: #03d938; --flow6: #33ff66; }
+.accent-blue { --accent: var(--blue); --flow1: #15242e; --flow2: #18384d; --flow3: #1c5375; --flow4: #2072a5; --flow5: #2594d9; --flow6: #54bdff; }
+.accent-magenta { --accent: var(--magenta); --flow1: #251d2e; --flow2: #392a4d; --flow3: #533a75; --flow4: #724ea5; --flow5: #9463d9; --flow6: #bd8fff; }
+.accent-orange { --accent: var(--orange); --flow1: #2e230f; --flow2: #4d360d; --flow3: #764e0a; --flow4: #a56c06; --flow5: #d98c03; --flow6: #ffb533; }
+.accent-yellow { --accent: var(--yellow); --flow1: #2e2b14; --flow2: #4d4817; --flow3: #766d1a; --flow4: #a5991f; --flow5: #d9c923; --flow6: #fff052; }
+.accent-cyan { --accent: var(--cyan); --flow1: #1e2e2b; --flow2: #2a4d47; --flow3: #3b756c; --flow4: #4ea598; --flow5: #63d9c7; --flow6: #8fffee; }
+.accent-beige { --accent: var(--beige); --flow1: #2e2723; --flow2: #4d4037; --flow3: #766051; --flow4: #a58570; --flow5: #d9ae92; --flow6: #ffd6bb; }
+.menu-center { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex;
+               align-items: center; justify-content: center; }
+.menu-card { width: 54; background-color: var(--bg2); border: round; border-color: var(--bg5); padding: 1 2;
+             animation: pop 180ms ease-out; }
+.brand { display: flex; height: 1; font-weight: bold; margin-bottom: 1; }
+.brand .logo { color: var(--accent); width: 2; }
+.brand .sub { color: var(--muted); font-weight: normal; margin-left: 2; }
+.mi { display: flex; height: 1; padding: 0 1; transition: background-color 90ms ease-out; }
+.mi:hover { background-color: var(--bg3); }
+.mi.sel { background-color: var(--bg4); }
+.mi-icon { width: 2; color: var(--muted); }
+.mi-label { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mi-note { color: var(--muted); white-space: nowrap; }
+.mi-note.ok { color: var(--green); }
+.mi-note.bad { color: var(--red); }
+.mi-note.warn { color: var(--orange); }
+.mi .badge { color: var(--red); margin-left: 1; }
+.rule { height: 1; color: var(--bg5); margin: 0; white-space: nowrap; overflow: hidden; }
+.menu-hint { margin-top: 1; color: var(--muted); height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.menu-err { color: var(--red); height: 1; }
+
+.reduced * { animation: none; transition: none; }

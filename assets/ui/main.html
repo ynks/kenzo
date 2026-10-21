@@ -1,0 +1,58 @@
+<if condition="{show_main}">
+  <div class="main {main_cls}">
+    <div class="thead">
+      <span class="h-ptr"> </span><span class="h-bar"> </span>
+      <span class="h-sev">Sev</span><span class="h-time" onclick="ToggleTime">{time_header}</span>
+      <span class="h-sink" style="width: {sink_w};">Sink</span>
+      <span class="h-file" style="width: {file_w};">File</span>
+      <span class="h-msg">Message</span>
+    </div>
+    <div class="tbody">
+      <div class="rows">
+        <for each="{rows}" as="r">
+          <div class="row {r.cls}" onclick="RowClick({$index})" oncontextmenu="RowContext({$index})">
+            <span class="c-ptr">{r.ptr}</span><span class="c-bar">{r.bar}</span>
+            <span class="c-sev b1">{r.tag}</span>
+            <span class="c-time b2"><span>{r.t0}</span><span class="hit">{r.t1}</span><span>{r.t2}</span></span>
+            <span class="c-sink b3" style="width: {sink_w};"><span>{r.sk0}</span><span class="hit">{r.sk1}</span><span>{r.sk2}</span></span>
+            <span class="c-file b4" style="width: {file_w};"><span>{r.f0}</span><span class="hit">{r.f1}</span><span>{r.f2}</span></span>
+            <span class="c-msg b5"><span>{r.m0}</span><span class="hit">{r.m1}</span><span>{r.m2}</span><span class="hit">{r.m3}</span><span>{r.m4}</span><span class="hit">{r.m5}</span><span>{r.m6}</span><span class="c-more">{r.more}</span></span>
+          </div>
+        </for>
+        <if condition="{rows_empty}"><div class="empty">{empty_text}</div></if>
+      </div>
+      <div class="sbar">
+        <for each="{bar_cells}" as="c"><div class="sbc {c.cls}" onclick="BarJump({$index})"> </div></for>
+      </div>
+    </div>
+    <div class="search {search_cls}" onclick="FocusSearch">
+      <span class="s-icon">{search_icon}</span>
+      <span class="s-text"><span>{search_before}</span><span class="{search_cursor_cls}">{search_under}</span><span>{search_after}</span><span class="s-placeholder">{search_placeholder}</span></span>
+      <span class="s-info {search_info_cls}">{search_info}</span>
+    </div>
+    <div class="status">
+      <div class="st-left">
+        <span class="pill {st_mode_cls}">{st_mode}</span>
+        <span class="st-pending">{st_pending}</span>
+        <span class="st-conn {st_conn_cls}">{st_conn}</span>
+      </div>
+      <if condition="{st_show_hints}"><div class="st-mid {st_hints_cls}" style="left: {st_hint_x};">
+        <span class="hint" onclick="FocusSearch"><span class="hk2">/</span> search</span>
+        <span class="hint" onclick="OpenSinks"><span class="hk2">s</span> sinks</span>
+        <span class="hint opt" onclick="OpenLevels"><span class="hk2">f</span> levels</span>
+        <span class="hint opt" onclick="ClearClick"><span class="hk2">X</span> clear</span>
+        <span class="hint" onclick="OpenHelp"><span class="hk2">?</span> help</span>
+      </div></if>
+      <div class="st-right">
+        <if condition="{st_show_follow}"><span class="st-follow {follow_cls}" onclick="ToggleFollow">{follow_text}</span></if>
+        <if condition="{st_show_levels}">
+          <span class="cnt ct {cnt_cls0}" onclick="ToggleGroup(0)">{cnt_label0} {cnt0}</span>
+          <span class="cnt ci2 {cnt_cls1}" onclick="ToggleGroup(1)">{cnt_label1} {cnt1}</span>
+          <span class="cnt cw {cnt_cls2}" onclick="ToggleGroup(2)">{cnt_label2} {cnt2}</span>
+          <span class="cnt ce {cnt_cls3}" onclick="ToggleGroup(3)">{cnt_label3} {cnt3}</span>
+        </if>
+      </div>
+    </div>
+  </div>
+  <if condition="{show_toast}"><div class="toast {toast_cls}">{toast_text}</div></if>
+</if>

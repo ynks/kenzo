@@ -1,0 +1,16 @@
+/* editor palette */
+self {
+	--bg1: #121111; --bg2: #1f1d1e; --bg3: #2b2a2a; --bg4: #383637; --bg5: #454343;
+	--text: #fafafa; --muted: #a0a0a0;
+	--red: #ff1659; --green: #00ff40; --blue: #29adff; --magenta: #ad73ff; --orange: #ffa300; --yellow: #ffec27; --cyan: #73ffea;
+	--beige: #ffccaa; --accent: #73ffea;
+	--dred: #660923; --dgreen: #00661a; --dblue: #104566; --dmagenta: #452e66; --dorange: #664100; --dyellow: #665f10;
+
+	--dred-95: rgba(102, 9, 35, 0.95);  --dred-75: rgba(102, 9, 35, 0.75);  --dred-55: rgba(102, 9, 35, 0.55);
+	--dred-36: rgba(102, 9, 35, 0.36);  --dred-16: rgba(102, 9, 35, 0.16);
+	--dorange-95: rgba(102, 65, 0, 0.95); --dorange-72: rgba(102, 65, 0, 0.72); --dorange-50: rgba(102, 65, 0, 0.5);
+	--dorange-32: rgba(102, 65, 0, 0.32); --dorange-14: rgba(102, 65, 0, 0.14);
+	--red-soft: rgba(255, 22, 89, 0.8); --orange-soft: rgba(255, 163, 0, 0.6);
+	--scrim: rgba(0, 0, 0, 0.5);
+	--red-grid-1: rgba(255, 22, 89, 0.28); --red-grid-2: rgba(255, 22, 89, 0.58);
+}

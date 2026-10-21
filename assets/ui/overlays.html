@@ -1,0 +1,84 @@
+<if condition="{show_sev}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dialog w44" onclick="Inside">
+      <div class="d-head"><span class="d-title">Severities</span><span class="grow"></span><span class="d-x" onclick="CloseOverlay">×</span></div>
+      <for each="{sev_rows}" as="s">
+        <div class="li {s.cls}" onclick="SevRowClick({$index})">
+          <span class="chk {s.chk_cls}">{s.chk}</span><span class="sv {s.color}">{s.name}</span>
+          <span class="grow"></span><span class="dim">{s.count}</span>
+        </div>
+      </for>
+      <div class="d-foot"><span class="kb">space</span> toggle  <span class="kb">a</span> all  <span class="kb">i</span> invert</div>
+    </div>
+  </div>
+</if>
+
+<if condition="{show_sinks}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dialog w72" onclick="Inside">
+      <div class="d-head"><span class="d-title">Sinks</span><span class="dim">  {sinks_summary}</span><span class="grow"></span><span class="d-x" onclick="CloseOverlay">×</span></div>
+      <div class="field {sinks_search_cls}" onclick="FocusSinkSearch">
+        <span class="f-icon">/</span><span class="f-text"><span>{sinks_before}</span><span class="{sinks_cursor_cls}">{sinks_under}</span><span>{sinks_after}</span><span class="s-placeholder">{sinks_placeholder}</span></span>
+      </div>
+      <div class="sink-list" style="height: {sinks_list_h};">
+        <for each="{sink_rows}" as="s">
+          <div class="li {s.cls}" onclick="SinkRowClick({$index})">
+            <span class="chk {s.chk_cls}" onclick="SinkToggle({$index})">{s.chk}</span>
+            <span class="sink-name">{s.name}</span><span class="grow"></span><span class="dim cnt-col">{s.count}</span>
+            <span class="chip {s.k0}" onclick="SinkChip({s.i0})">{s.l0}</span><span class="chip {s.k1}" onclick="SinkChip({s.i1})">{s.l1}</span><span class="chip {s.k2}" onclick="SinkChip({s.i2})">{s.l2}</span><span class="chip {s.k3}" onclick="SinkChip({s.i3})">{s.l3}</span>
+          </div>
+        </for>
+        <if condition="{sinks_empty}"><div class="dim pad">no sinks match</div></if>
+      </div>
+      <div class="d-foot"><span class="kb">space</span> toggle  <span class="kb">ctrl-space</span> only  <span class="kb">i</span> invert  <span class="kb">/</span> find</div>
+    </div>
+  </div>
+</if>
+
+<if condition="{show_sessions}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dialog w72" onclick="Inside">
+      <div class="d-head"><span class="d-title">Sessions</span><span class="dim"> {sessions_summary}</span><span class="grow"></span><span class="d-x" onclick="CloseOverlay">×</span></div>
+      <div class="field {sess_search_cls}" onclick="FocusSessSearch">
+        <span class="f-icon">/</span><span class="f-text"><span>{sess_before}</span><span class="{sess_cursor_cls}">{sess_under}</span><span>{sess_after}</span><span class="s-placeholder">{sess_placeholder}</span></span>
+      </div>
+      <div class="sink-list" style="height: {sess_list_h};">
+        <for each="{sess_rows}" as="s">
+          <div class="li {s.cls}" onclick="SessRowClick({$index})">
+            <span class="sess-when">{s.when}</span><span class="sess-name dim">{s.name}</span><span class="grow"></span>
+            <span class="badge">{s.badge}</span><span class="dim sess-info">{s.info}</span>
+          </div>
+        </for>
+        <if condition="{sess_empty}"><div class="dim pad">no sessions found</div></if>
+      </div>
+      <div class="d-foot"><span class="kb">enter</span> open  <span class="kb">j/k</span> move  <span class="kb">/</span> filter  <span class="kb">esc</span> close</div>
+    </div>
+  </div>
+</if>
+
+<if condition="{show_help}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dialog w88" onclick="Inside">
+      <div class="d-head"><span class="d-title">Keys</span><span class="grow"></span><span class="d-x" onclick="CloseOverlay">×</span></div>
+      <div class="help-grid" style="height: {help_h};">
+        <for each="{help_rows}" as="h"><div class="hl"><span class="hk">{h.keys}</span><span class="hd {h.cls}">{h.text}</span></div></for>
+      </div>
+      <div class="d-foot"><span class="kb">esc</span> close  <span class="kb">j/k</span> scroll</div>
+    </div>
+  </div>
+</if>
+
+<if condition="{show_ctx}">
+  <div class="ctx" style="left: {ctx_x}; top: {ctx_y};">
+    <for each="{ctx_items}" as="c">
+      <div class="ci {c.cls}" onclick="CtxPick({$index})"><span class="ci-l">{c.label}</span><span class="grow"></span><span class="ci-k">{c.key}</span><span class="ci-arrow">{c.arrow}</span></div>
+    </for>
+  </div>
+  <if condition="{show_ctx_sub}">
+    <div class="ctx sub" style="left: {ctx_sub_x}; top: {ctx_sub_y};">
+      <for each="{ctx_sub_items}" as="c">
+        <div class="ci {c.cls}" onclick="CtxSubPick({$index})"><span class="ci-l">{c.label}</span><span class="grow"></span><span class="ci-k">{c.key}</span></div>
+      </for>
+    </div>
+  </if>
+</if>
