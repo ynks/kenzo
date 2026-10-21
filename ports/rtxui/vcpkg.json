@@ -1,0 +1,11 @@
+{
+  "name": "rtxui",
+  "version": "0.1.1",
+  "description": "A browser engine for your terminal (HTML/CSS TUI library)",
+  "homepage": "https://github.com/ArthurSonzogni/RTXUI",
+  "license": "MIT",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true }
+  ]
+}

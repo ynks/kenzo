@@ -1,0 +1,37 @@
+--- a/src/rtxui/terminal/screen.cpp
++++ b/src/rtxui/terminal/screen.cpp
+@@ -1860,7 +1860,10 @@ void ScreenImpl::HandleEvent(Event event) {
+             scrollbar_thumb_hovered = true;
+             scrollbar_active = true;
+             scrollbar_thumb_active = true;
+-          } else if (!drag_active_) {
++          } else if (!drag_active_ &&
++                     el.style.scrollbar_width == ScrollbarWidth::Auto &&
++                     (el.style.overflow_x == Overflow::Scroll ||
++                      el.style.overflow_y == Overflow::Scroll)) {
+             auto frag_opt = FindFragmentForElementWithPos(root_fragment_, &el);
+             if (frag_opt) {
+               bool on_v_thumb = false;
+--- a/src/rtxui/terminal/terminal_input_parser.cpp
++++ b/src/rtxui/terminal/terminal_input_parser.cpp
+@@ -308,6 +308,20 @@ bool TerminalInputParser::Eat() {
+ }
+ void TerminalInputParser::Send(TerminalInputParser::Output output) {
+   if (auto* event = std::get_if<Event>(&output)) {
++    // Only the latest hover position in a burst can be displayed. Keep all
++    // button, wheel, drag, keyboard and modifier changes in their original order.
++    if (const auto mouse = event->get_if<Event::Mouse>();
++        mouse && mouse->motion() == Event::Mouse::Moved &&
++        mouse->button() == Event::Mouse::None && !events_.empty()) {
++      const auto previous = events_.back().get_if<Event::Mouse>();
++      if (previous && previous->motion() == Event::Mouse::Moved &&
++          previous->button() == Event::Mouse::None &&
++          previous->modifier() == mouse->modifier()) {
++        events_.back() = std::move(*event);
++        pending_.clear();
++        return;
++      }
++    }
+     events_.push_back(std::move(*event));
+     pending_.clear();
+     return;

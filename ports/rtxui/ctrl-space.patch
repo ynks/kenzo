@@ -1,0 +1,14 @@
+--- a/src/rtxui/terminal/terminal_input_parser.cpp
++++ b/src/rtxui/terminal/terminal_input_parser.cpp
+@@ -26,6 +26,11 @@
+ namespace rtxui {
+ 
+ std::optional<Event> TerminalInputParser::ToEvent(std::string_view sequence) {
++  // Legacy terminals report Ctrl-Space as NUL. Preserve it for the app.
++  if (sequence.size() == 1 && sequence.front() == '\0') {
++    return Event::Keyboard::From(uint32_t{0});
++  }
++
+   static const auto& mapping = *new std::map<std::string, Event>{
+       {"\x1B[D", Event::ArrowLeft()},
+       {"\x1B[C", Event::ArrowRight()},

@@ -1,0 +1,12 @@
+--- a/src/rtxui/paint/texture.cpp
++++ b/src/rtxui/paint/texture.cpp
+@@ -150,7 +150,8 @@
+     if (y != 0) {
+       transition(&default_cell);
+       prev = &default_cell;
+-      ss << "\n";
++      // A bare line feed does not return the cursor in the Windows console mode RTXUI selects.
++      ss << "\r\n";
+     }
+ 
+     const int end = RowEnd(y);
