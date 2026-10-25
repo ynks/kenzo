@@ -2,15 +2,9 @@
 
 Terminal log viewer for the Toast Engine logging server
 
-<video width="1114" height="628" controls>
-  <source src="docs/main.mp4" type="video/mp4">
-</video>
-
-## Screenshots
-
-<img src="docs/ss1.png" width="500"/>
-<img src="docs/ss2.png" width="500"/>
-<img src="docs/ss3.png" width="500"/>
+<img src="docs/ss1.png" width="600"/>
+<img src="docs/ss2.png" width="600"/>
+<img src="docs/ss3.png" width="600"/>
 
 ## Install
 
