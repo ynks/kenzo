@@ -119,6 +119,19 @@ inline void Fields(const SessionRow& v, rtxui::FieldSink& out) {
 	out("info", v.info);
 }
 
+struct RemoteRow {
+	std::string cls, host, user, when, duration, size;
+	bool operator==(const RemoteRow&) const = default;
+};
+inline void Fields(const RemoteRow& v, rtxui::FieldSink& out) {
+	out("cls", v.cls);
+	out("host", v.host);
+	out("user", v.user);
+	out("when", v.when);
+	out("duration", v.duration);
+	out("size", v.size);
+}
+
 struct HelpRow {
 	std::string keys, text, cls;
 	bool operator==(const HelpRow&) const = default;

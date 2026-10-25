@@ -32,4 +32,16 @@ std::optional<std::filesystem::path> sessionLogDir() {
 	return *base / "ToastEngine" / "logs";
 }
 
+std::optional<std::filesystem::path> remoteLogDir() {
+	if (auto dir = sessionLogDir()) {
+		return *dir / "remote";
+	}
+	return std::nullopt;
+}
+
+std::string pathUtf8(const std::filesystem::path& path) {
+	const auto text = path.u8string();
+	return std::string(text.begin(), text.end());
+}
+
 }  // namespace kenzo

@@ -82,3 +82,11 @@
 .btn:hover { background-color: var(--bg5); }
 .btn.dis { color: var(--bg5); }
 .btn.primary { background-color: var(--red); color: var(--bg1); font-weight: bold; }
+.rem-host { width: 22; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-weight: bold; }
+.rem-user { width: 14; overflow: hidden; text-overflow: ellipsis; min-width: 0; padding-left: 1; }
+.rem-when { width: 16; overflow: hidden; text-overflow: ellipsis; min-width: 0; padding-left: 1; }
+.rem-dur { width: 9; padding-left: 1; }
+.rem-size { width: 10; padding-left: 1; }
+.rem-note { padding: 0 1; margin-bottom: 1; }
+.rem-note.bad { color: var(--red); }
+.dl-bar { color: var(--accent); padding: 0 1; margin-bottom: 1; white-space: nowrap; }

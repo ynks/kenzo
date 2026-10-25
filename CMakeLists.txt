@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(kenzo VERSION 2.0.0 LANGUAGES CXX)
+project(kenzo VERSION 2.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,6 +9,9 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 find_package(rtxui CONFIG REQUIRED)
 find_package(asio CONFIG REQUIRED)
 find_package(unofficial-vincentlaucsb-csv-parser CONFIG REQUIRED)
+find_package(CURL REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 include(cmake/EmbedAssets.cmake)
 set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets/ui)
@@ -21,7 +24,7 @@ list(REMOVE_ITEM KENZO_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 add_library(kenzo_core OBJECT ${KENZO_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/generated/assets_embedded.cpp)
 target_include_directories(kenzo_core PUBLIC src)
-target_link_libraries(kenzo_core PUBLIC rtxui::rtxui asio::asio unofficial::vincentlaucsb-csv-parser::csv)
+target_link_libraries(kenzo_core PUBLIC rtxui::rtxui asio::asio unofficial::vincentlaucsb-csv-parser::csv CURL::libcurl ZLIB::ZLIB nlohmann_json::nlohmann_json)
 target_compile_definitions(kenzo_core PUBLIC ASIO_NO_DEPRECATED ASIO_STANDALONE)
 
 if(MSVC)
@@ -48,3 +51,8 @@ target_link_libraries(kenzo_status_checks PRIVATE kenzo_core)
 
 add_executable(kenzo_idle_checks EXCLUDE_FROM_ALL tools/idle_checks.cpp)
 target_link_libraries(kenzo_idle_checks PRIVATE kenzo_core)
+
+add_executable(kenzo_remote_checks EXCLUDE_FROM_ALL tools/remote_checks.cpp)
+target_link_libraries(kenzo_remote_checks PRIVATE kenzo_core)
+add_dependencies(kenzo_remote_checks kenzo)
+target_compile_definitions(kenzo_remote_checks PRIVATE KENZO_EXE_PATH="$<TARGET_FILE:kenzo>")

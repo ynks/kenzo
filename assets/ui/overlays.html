@@ -56,6 +56,48 @@
   </div>
 </if>
 
+<if condition="{show_remote}">
+  <div class="overlay" onclick="BackdropClick">
+    <div class="dialog w72" onclick="Inside">
+      <div class="d-head"><span class="d-title">Remote logs</span><span class="dim"> {remote_summary}</span><span class="grow"></span><span class="d-x" onclick="CloseOverlay">×</span></div>
+      <if condition="{rem_show_prompt}">
+        <div class="rem-note">{remote_status}</div>
+        <div class="field on">
+          <span class="f-icon">›</span><span class="f-text"><span>{rem_pass_before}</span><span class="cursor">{rem_pass_under}</span><span>{rem_pass_after}</span></span>
+        </div>
+      </if>
+      <if condition="{rem_show_list}">
+        <div class="field {rem_search_cls}" onclick="FocusRemoteSearch">
+          <span class="f-icon">/</span><span class="f-text"><span>{rem_before}</span><span class="{rem_cursor_cls}">{rem_under}</span><span>{rem_after}</span><span class="s-placeholder">{rem_placeholder}</span></span>
+        </div>
+        <div class="sink-list" style="height: {rem_list_h};">
+          <for each="{rem_rows}" as="r">
+            <div class="li {r.cls}" onclick="RemoteRowClick({$index})">
+              <span class="rem-host">{r.host}</span><span class="rem-user dim">{r.user}</span><span class="rem-when">{r.when}</span><span class="grow"></span>
+              <span class="rem-dur dim">{r.duration}</span><span class="rem-size dim">{r.size}</span>
+            </div>
+          </for>
+          <if condition="{rem_empty}"><div class="dim pad">no sessions uploaded yet</div></if>
+        </div>
+      </if>
+      <if condition="{rem_show_status}"><div class="rem-note {remote_status_cls}">{remote_status}</div></if>
+      <div class="d-foot">{remote_hint}</div>
+    </div>
+  </div>
+</if>
+
+<if condition="{show_download}">
+  <div class="overlay">
+    <div class="dialog w44" onclick="Inside">
+      <div class="d-head"><span class="d-title">Downloading</span></div>
+      <div class="rem-note">{dl_name}</div>
+      <div class="dl-bar">{dl_bar}</div>
+      <div class="rem-note dim">{dl_detail}</div>
+      <div class="d-foot"><span class="kb">esc</span> cancel</div>
+    </div>
+  </div>
+</if>
+
 <if condition="{show_help}">
   <div class="overlay" onclick="BackdropClick">
     <div class="dialog w88" onclick="Inside">

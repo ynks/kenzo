@@ -3,6 +3,7 @@
 #include <rtxui/rtxui.hpp>
 #include <string_view>
 
+#include "net/ssh_auth.hpp"
 #include "ui/app.hpp"
 
 #ifdef _WIN32
@@ -29,6 +30,11 @@ Press ? inside kenzo for every key.
 }  // namespace
 
 int main(int argc, char** argv) {
+	// ssh-keygen runs kenzo as its askpass helper
+	if (kenzo::net::isAskpassInvocation()) {
+		return kenzo::net::askpassMain();
+	}
+
 	kenzo::ui::Options options;
 	if (const char* env = std::getenv("KENZO_REDUCED_MOTION")) {
 		options.reducedMotion = *env != '\0' && *env != '0';
@@ -48,7 +54,7 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 		if (arg == "-v" || arg == "--version") {
-			std::println("kenzo 2.0.0");
+			std::println("kenzo 2.1");
 			return 0;
 		}
 		if (arg == "--reduced-motion") {

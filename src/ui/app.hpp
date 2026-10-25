@@ -14,6 +14,7 @@
 #include "core/csv.hpp"
 #include "core/filter.hpp"
 #include "core/sessions.hpp"
+#include "net/remote.hpp"
 #include "core/store.hpp"
 #include "net/connection.hpp"
 #include "ui/assets.hpp"
@@ -28,11 +29,12 @@ struct Options {
 	bool reducedMotion = false;
 	std::function<void(std::string_view)> clipboard;
 	std::function<std::chrono::steady_clock::time_point()> menuClock;
+	std::function<std::unique_ptr<RemoteClient>(RemoteClient::Post)> remoteFactory;
 };
 
 enum class Source { None, Localhost, Lan, File };
 enum class Link { Searching, Connected, Disconnected };
-enum class Overlay { None, Severities, Sinks, Sessions, Help, Context, Detail };
+enum class Overlay { None, Severities, Sinks, Sessions, Remote, Help, Context, Detail };
 
 using Clock = std::chrono::steady_clock;
 
@@ -57,7 +59,8 @@ public:
 	std::string menu_cls0, menu_cls1, menu_cls_more, menu_icon0, menu_icon1, menu_note0, menu_note1, menu_note_cls0, menu_note_cls1;
 	bool lan_editing = false, lan_idle = true;
 	std::string lan_before, lan_under, lan_after;
-	std::string menu_rule, menu_more_count, menu_error, menu_hint;
+	std::string menu_rule, menu_error, menu_hint;
+	std::string menu_cls_remote;
 	std::vector<MenuSessionRow> menu_sessions;
 	bool menu_no_sessions = false;
 
@@ -78,6 +81,13 @@ public:
 	bool show_toast = false;
 	std::string toast_cls, toast_text;
 
+	bool show_remote = false, rem_show_prompt = false, rem_show_list = false, rem_show_status = false, rem_empty = false;
+	std::string remote_summary, remote_status, remote_status_cls, remote_hint, rem_search_cls, rem_before, rem_cursor_cls, rem_under, rem_after,
+	    rem_placeholder, rem_pass_before, rem_pass_under, rem_pass_after;
+	int rem_list_h = 8;
+	std::vector<RemoteRow> rem_rows;
+	bool show_download = false;
+	std::string dl_name, dl_bar, dl_detail;
 	bool show_sev = false, show_sinks = false, show_sessions = false, show_help = false, show_ctx = false, show_ctx_sub = false,
 	     show_detail = false;
 	std::vector<SevRow> sev_rows;
@@ -125,6 +135,8 @@ public:
 	void SinkChip(std::string code);
 	void FocusSinkSearch();
 	void FocusSessSearch();
+	void FocusRemoteSearch();
+	void RemoteRowClick(std::string index);
 	void SessRowClick(std::string index);
 	void CtxPick(std::string index);
 	void CtxSubPick(std::string index);
@@ -202,6 +214,11 @@ private:
 	void buildSessionsDialog();
 	bool handleSessionsKey(const Key& key);
 	bool sessSearchChanged();
+	void buildRemoteDialog();
+	bool handleRemoteKey(const Key& key);
+	bool handlePassphraseKey(const Key& key);
+	bool remoteSearchChanged();
+	void startRemoteDownload(std::size_t listIndex);
 	void openSession(const SessionInfo& session);
 
 	void openOverlay(Overlay which);
@@ -236,6 +253,7 @@ private:
 	std::unique_ptr<ViewIndex> index_;
 	std::unique_ptr<Connection> connection_;
 	std::unique_ptr<SessionScanner> scanner_;
+	std::unique_ptr<RemoteClient> remote_;
 	std::unique_ptr<CsvLoader> loader_;
 
 	Source source_ = Source::None;
@@ -306,6 +324,16 @@ private:
 	bool sessSearchFocus_ = false;
 	std::size_t sessSel_ = 0, sessTop_ = 0;
 	std::vector<std::size_t> sessList_;
+
+	TextField remoteSearch_;
+	bool remoteSearchFocus_ = false;
+	TextField passphrase_;
+	std::size_t remoteSel_ = 0, remoteTop_ = 0;
+	std::vector<std::size_t> remoteList_;
+	bool remoteDownloading_ = false;
+	std::uint64_t remoteDone_ = 0, remoteTotal_ = 0;
+	std::string remoteMessage_;
+	std::string remoteName_;
 
 	std::size_t detailPos_ = 0;
 	int detailPane_ = 0;

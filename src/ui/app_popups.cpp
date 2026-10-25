@@ -50,12 +50,30 @@ void App::openOverlay(Overlay which) {
 			sessSearchFocus_ = false;
 			refreshSessions();
 			break;
+		case Overlay::Remote:
+			remoteSel_ = 0;
+			remoteTop_ = 0;
+			remoteSearchFocus_ = false;
+			remoteSearch_.clear();
+			passphrase_.clear();
+			remoteMessage_.clear();
+			remoteDownloading_ = false;
+			remote_->open();
+			break;
 		case Overlay::Help: helpTop_ = 0; break;
 		default: break;
 	}
 }
 
 void App::closeOverlay() {
+	if (overlay_ == Overlay::Remote) {
+		remote_->cancelDownload();
+		if (remote_->snapshot().state == RemoteClient::State::NeedPassphrase) {
+			remote_->cancelPassphrase();
+		}
+		passphrase_.clear();
+		remoteSearchFocus_ = false;
+	}
 	overlay_ = Overlay::None;
 	sinkSearchFocus_ = false;
 	sessSearchFocus_ = false;

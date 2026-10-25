@@ -2,6 +2,7 @@
 
 Terminal log viewer for the Toast Engine logging server
 
+<img src="docs/ss4.png" width="600"/>
 <img src="docs/ss1.png" width="600"/>
 <img src="docs/ss2.png" width="600"/>
 <img src="docs/ss3.png" width="600"/>

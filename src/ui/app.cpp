@@ -32,6 +32,7 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(menu_cls0);
 	Bind(menu_cls1);
 	Bind(menu_cls_more);
+	Bind(menu_cls_remote);
 	Bind(menu_icon0);
 	Bind(menu_icon1);
 	Bind(menu_note0);
@@ -44,7 +45,6 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(lan_under);
 	Bind(lan_after);
 	Bind(menu_rule);
-	Bind(menu_more_count);
 	Bind(menu_error);
 	Bind(menu_hint);
 	Bind(menu_sessions);
@@ -97,6 +97,30 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(show_sev);
 	Bind(show_sinks);
 	Bind(show_sessions);
+	Bind(show_remote);
+	Bind(rem_show_prompt);
+	Bind(rem_show_list);
+	Bind(rem_show_status);
+	Bind(rem_empty);
+	Bind(remote_summary);
+	Bind(remote_status);
+	Bind(remote_status_cls);
+	Bind(remote_hint);
+	Bind(rem_search_cls);
+	Bind(rem_before);
+	Bind(rem_cursor_cls);
+	Bind(rem_under);
+	Bind(rem_after);
+	Bind(rem_placeholder);
+	Bind(rem_pass_before);
+	Bind(rem_pass_under);
+	Bind(rem_pass_after);
+	Bind(rem_list_h);
+	Bind(rem_rows);
+	Bind(show_download);
+	Bind(dl_name);
+	Bind(dl_bar);
+	Bind(dl_detail);
 	Bind(show_help);
 	Bind(show_ctx);
 	Bind(show_ctx_sub);
@@ -181,6 +205,8 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(FocusSinkSearch);
 	Bind(FocusSessSearch);
 	Bind(SessRowClick);
+	Bind(FocusRemoteSearch);
+	Bind(RemoteRowClick);
 	Bind(CtxPick);
 	Bind(CtxSubPick);
 	Bind(FocusPane);
@@ -196,6 +222,7 @@ App::App(Options options) : options_(std::move(options)) {
 	                                                      [this](std::vector<RawRecord>&& b) { onBatch(std::move(b)); },
 	                                                  });
 	scanner_ = std::make_unique<SessionScanner>(post);
+	remote_ = options_.remoteFactory ? options_.remoteFactory(post) : std::make_unique<RemoteClient>(post);
 
 	buildHelp();
 	randomizeBackground();
@@ -366,6 +393,8 @@ void App::refreshFlags() {
 	show_sev = overlay_ == Overlay::Severities;
 	show_sinks = overlay_ == Overlay::Sinks;
 	show_sessions = overlay_ == Overlay::Sessions;
+	show_remote = overlay_ == Overlay::Remote;
+	show_download = overlay_ == Overlay::Remote && remoteDownloading_;
 	show_help = overlay_ == Overlay::Help;
 	show_ctx = overlay_ == Overlay::Context;
 	show_detail = overlay_ == Overlay::Detail;
@@ -397,6 +426,9 @@ bool App::Digest() {
 		buildMenu();
 		if (overlay_ == Overlay::Sessions) {
 			buildSessionsDialog();
+		}
+		if (overlay_ == Overlay::Remote) {
+			buildRemoteDialog();
 		}
 	}
 	if (show_main) {
@@ -618,6 +650,12 @@ bool App::handleKey(const Key& key) {
 	if (sessSearchFocus_) {
 		return handleTextKey(sessSearch_, key, sessSearchFocus_, &App::sessSearchChanged);
 	}
+	if (overlay_ == Overlay::Remote && remote_->snapshot().state == RemoteClient::State::NeedPassphrase) {
+		return handlePassphraseKey(key);
+	}
+	if (remoteSearchFocus_) {
+		return handleTextKey(remoteSearch_, key, remoteSearchFocus_, &App::remoteSearchChanged);
+	}
 
 	switch (overlay_) {
 		case Overlay::Detail: return handleDetailKey(key);
@@ -625,6 +663,7 @@ bool App::handleKey(const Key& key) {
 		case Overlay::Severities: return handleSeverityKey(key);
 		case Overlay::Sinks: return handleSinkKey(key);
 		case Overlay::Sessions: return handleSessionsKey(key);
+		case Overlay::Remote: return handleRemoteKey(key);
 		case Overlay::Help: return handleHelpKey(key);
 		case Overlay::None: break;
 	}

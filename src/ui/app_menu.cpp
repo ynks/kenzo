@@ -12,6 +12,9 @@ namespace {
 constexpr std::array<const char*, 10> kSpinner = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
 constexpr auto kBackgroundIdle = std::chrono::minutes(1);
 constexpr double kBackgroundTransitionSeconds = 3.0;
+constexpr int kRecentSessions = 5;
+constexpr int kMenuMore = 2 + kRecentSessions;
+constexpr int kMenuRemote = kMenuMore + 1;
 
 std::string repeat(std::string_view unit, int count) {
 	std::string out;
@@ -256,7 +259,7 @@ void App::buildMenu() {
 	menu_rule = repeat("─", 48);
 
 	menu_sessions.clear();
-	const std::size_t shown = std::min<std::size_t>(3, sessions_.size());
+	const std::size_t shown = std::min<std::size_t>(kRecentSessions, sessions_.size());
 	for (std::size_t i = 0; i < shown; ++i) {
 		const SessionInfo& s = sessions_[i];
 		MenuSessionRow row;
@@ -268,8 +271,8 @@ void App::buildMenu() {
 		menu_sessions.push_back(std::move(row));
 	}
 	menu_no_sessions = sessions_.empty();
-	menu_cls_more = menuSel_ == 5 ? "sel" : "";
-	menu_more_count = sessions_.size() > shown ? std::format("{} total", sessions_.size()) : "";
+	menu_cls_more = menuSel_ == kMenuMore ? "sel" : "";
+	menu_cls_remote = menuSel_ == kMenuRemote ? "sel" : "";
 
 	if (lanFocus_) {
 		menu_hint = "enter connect · esc cancel";
@@ -298,7 +301,8 @@ void App::activateMenu(int item) {
 			}
 			break;
 		case 1: beginLanEdit(); break;
-		case 5: openOverlay(Overlay::Sessions); break;
+		case kMenuMore: openOverlay(Overlay::Sessions); break;
+		case kMenuRemote: openOverlay(Overlay::Remote); break;
 		default: {
 			const auto index = static_cast<std::size_t>(item - 2);
 			if (index < sessions_.size()) {
@@ -329,10 +333,11 @@ bool App::handleMenuKey(const Key& key) {
 	using K = rtxui::Event::Keyboard;
 
 	std::vector<int> items = {0, 1};
-	for (std::size_t i = 0; i < std::min<std::size_t>(3, sessions_.size()); ++i) {
+	for (std::size_t i = 0; i < std::min<std::size_t>(kRecentSessions, sessions_.size()); ++i) {
 		items.push_back(static_cast<int>(2 + i));
 	}
-	items.push_back(5);
+	items.push_back(kMenuMore);
+	items.push_back(kMenuRemote);
 	const auto at = std::find(items.begin(), items.end(), menuSel_);
 	const auto index = at == items.end() ? 0 : static_cast<int>(at - items.begin());
 
@@ -345,15 +350,15 @@ bool App::handleMenuKey(const Key& key) {
 	} else if (key.is('g') || key.is(K::Home)) {
 		menuSel_ = 0;
 	} else if (key.is('G') || key.is(K::End)) {
-		menuSel_ = 5;
-	} else if (key.ch >= '1' && key.ch <= '3' && !key.ctrl && !key.alt) {
+		menuSel_ = kMenuRemote;
+	} else if (key.ch >= '1' && key.ch < '1' + kRecentSessions && !key.ctrl && !key.alt) {
 		const auto recent = static_cast<std::size_t>(key.ch - '1');
-		if (recent < std::min<std::size_t>(3, sessions_.size())) {
+		if (recent < std::min<std::size_t>(kRecentSessions, sessions_.size())) {
 			menuSel_ = static_cast<int>(2 + recent);
 			activateMenu(menuSel_);
 		}
 	} else if (key.is('/')) {
-		activateMenu(5);
+		activateMenu(kMenuMore);
 	} else if (key.is(K::Return) || key.is('l') || key.is(' ') || key.is(K::ArrowRight)) {
 		activateMenu(menuSel_);
 	} else if (key.is('i') && menuSel_ == 1) {

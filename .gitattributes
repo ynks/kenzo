@@ -1,0 +1,3 @@
+# Scripts and hooks run on Linux; keep their line endings LF in every checkout.
+pocketbase/**/*.sh text eol=lf
+pocketbase/**/*.js text eol=lf

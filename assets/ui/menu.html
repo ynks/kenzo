@@ -30,8 +30,11 @@
           </div>
         </for>
         <if condition="{menu_no_sessions}"><div class="mi"><span class="mi-icon"></span><span class="mi-label dim">no sessions yet</span></div></if>
-        <div class="mi {menu_cls_more}" onclick="MenuPick(5)">
-          <span class="mi-icon">/</span><span class="mi-label">more sessions</span><span class="mi-note">{menu_more_count}</span>
+        <div class="mi {menu_cls_more}" onclick="MenuPick(7)">
+          <span class="mi-icon">/</span><span class="mi-label">more sessions</span>
+        </div>
+        <div class="mi {menu_cls_remote}" onclick="MenuPick(8)">
+          <span class="mi-icon">⇅</span><span class="mi-label">remote logs</span>
         </div>
 
         <div class="menu-err">{menu_error}</div>
