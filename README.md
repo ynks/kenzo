@@ -2,7 +2,9 @@
 
 Terminal log viewer for the Toast Engine logging server. Connects to the server or opens a saved session csv.
 
-[Demo video](docs/main.mp4)
+![main](docs/main.mp4)
+
+## Screenshots
 
 ![logs](docs/ss1.png)
 ![details](docs/ss2.png)
