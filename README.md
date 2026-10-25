@@ -1,18 +1,20 @@
 # kenzo
 
-Terminal log viewer for the Toast Engine logging server. Connects to the server or opens a saved session csv.
+Terminal log viewer for the Toast Engine logging server
 
-![main](docs/main.mp4)
+<video width="1114" height="628" controls>
+  <source src="docs/main.mp4" type="video/mp4">
+</video>
 
 ## Screenshots
 
-![logs](docs/ss1.png)
-![details](docs/ss2.png)
-![sinks](docs/ss3.png)
+<img src="docs/ss1.png" width="500"/>
+<img src="docs/ss2.png" width="500"/>
+<img src="docs/ss3.png" width="500"/>
 
 ## Install
 
-You need CMake 3.24+, a C++23 compiler and [vcpkg](https://github.com/microsoft/vcpkg) with `VCPKG_ROOT` set.
+You need CMake 3.24+, a C++23 compiler and [vcpkg](https://github.com/microsoft/vcpkg) with `VCPKG_ROOT`
 
 ```
 git clone <repo url> kenzo
@@ -21,7 +23,7 @@ cmake --preset win-release
 cmake --build --preset win-release
 ```
 
-Use `unix-release` on linux and macOS. The exe ends up in `out/<preset>/Release`.
+Use `unix-release` on linux and macOS. The exe ends up in `out/<preset>/Release`
 
 ## Usage
 
