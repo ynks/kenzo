@@ -12,6 +12,13 @@
           <span class="mi-note {menu_note_cls0}">{menu_note0}</span>
         </div>
 
+        <for each="{menu_peers}" as="p">
+          <div class="mi {p.cls}" onclick="MenuPeer({$index})">
+            <span class="mi-icon">{p.icon}</span><span class="mi-label">{p.when}</span>
+            <span class="mi-note {p.badge}">{p.info}</span>
+          </div>
+        </for>
+
         <div class="mi {menu_cls1}" onclick="MenuPick(1)">
           <span class="mi-icon">{menu_icon1}</span>
           <if condition="{lan_editing}">
@@ -26,7 +33,7 @@
         <for each="{menu_sessions}" as="s">
           <div class="mi {s.cls}" onclick="MenuSession({$index})">
             <span class="mi-icon">{s.icon}</span><span class="mi-label">{s.when}</span>
-            <span class="mi-note">{s.info}</span><span class="badge">{s.badge}</span>
+            <span class="badge">{s.badge}</span><span class="mi-note">{s.info}</span>
           </div>
         </for>
         <if condition="{menu_no_sessions}"><div class="mi"><span class="mi-icon"></span><span class="mi-label dim">no sessions yet</span></div></if>

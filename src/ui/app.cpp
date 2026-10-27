@@ -48,6 +48,7 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(menu_error);
 	Bind(menu_hint);
 	Bind(menu_sessions);
+	Bind(menu_peers);
 	Bind(menu_no_sessions);
 	Bind(show_main);
 	Bind(main_cls);
@@ -182,6 +183,7 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(dv_rh);
 	Bind(MenuPick);
 	Bind(MenuSession);
+	Bind(MenuPeer);
 	Bind(RowClick);
 	Bind(RowContext);
 	Bind(BarJump);

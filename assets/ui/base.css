@@ -38,7 +38,7 @@ self { width: 100%; height: 100%; background-color: var(--bg1); color: var(--tex
 .mi-note.ok { color: var(--green); }
 .mi-note.bad { color: var(--red); }
 .mi-note.warn { color: var(--orange); }
-.mi .badge { color: var(--red); margin-left: 1; }
+.mi .badge { color: var(--red); width: 9; flex-shrink: 0; white-space: nowrap; }
 .rule { height: 1; color: var(--bg5); margin: 0; white-space: nowrap; overflow: hidden; }
 .menu-hint { margin-top: 0; color: var(--muted); height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .menu-err { color: var(--red); height: 1; }

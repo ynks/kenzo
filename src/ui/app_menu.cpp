@@ -15,6 +15,8 @@ constexpr double kBackgroundTransitionSeconds = 3.0;
 constexpr int kRecentSessions = 5;
 constexpr int kMenuMore = 2 + kRecentSessions;
 constexpr int kMenuRemote = kMenuMore + 1;
+constexpr int kMenuPeer = 100;
+constexpr std::size_t kMaxPeers = 4;
 
 std::string repeat(std::string_view unit, int count) {
 	std::string out;
@@ -213,6 +215,12 @@ bool App::lanChanged() {
 void App::buildMenu() {
 	const std::string spin = kSpinner[static_cast<std::size_t>(spinner_) % kSpinner.size()];
 
+	peers_ = discovery_.peers();
+	if (peers_.size() > kMaxPeers) {
+		peers_.resize(kMaxPeers);
+	}
+	const bool viaPeer = std::ranges::any_of(peers_, [&](const Peer& p) { return target_.host == p.address && target_.port == p.port; });
+
 	const bool local = source_ == Source::Localhost;
 	menu_cls0 = menuSel_ == 0 ? "sel" : "";
 	if (local && link_ == Link::Connected) {
@@ -229,7 +237,7 @@ void App::buildMenu() {
 		menu_note_cls0 = "";
 	}
 
-	const bool lan = source_ == Source::Lan;
+	const bool lan = source_ == Source::Lan && !viaPeer;
 	menu_cls1 = menuSel_ == 1 ? "sel" : "";
 	lan_editing = lanFocus_ || !lan_.empty();
 	lan_idle = !lan_editing;
@@ -254,6 +262,19 @@ void App::buildMenu() {
 		menu_icon1 = lanFocus_ ? "›" : "○";
 		menu_note1 = "";
 		menu_note_cls1 = "";
+	}
+
+	menu_peers.clear();
+	for (std::size_t i = 0; i < peers_.size(); ++i) {
+		const Peer& p = peers_[i];
+		const bool active = source_ == Source::Lan && target_.host == p.address && target_.port == p.port;
+		MenuSessionRow row;
+		row.cls = menuSel_ == kMenuPeer + static_cast<int>(i) ? "sel" : "";
+		row.icon = active ? (link_ == Link::Connected ? "●" : spin) : "○";
+		row.when = p.name;
+		row.info = active && link_ == Link::Connected ? "connected" : p.address;
+		row.badge = active && link_ == Link::Connected ? "ok" : "";
+		menu_peers.push_back(std::move(row));
 	}
 
 	menu_rule = repeat("─", 48);
@@ -281,6 +302,24 @@ void App::buildMenu() {
 	}
 }
 
+void App::connectPeer(std::size_t index) {
+	if (index >= peers_.size()) {
+		return;
+	}
+	Target t;
+	t.host = peers_[index].address;
+	t.port = peers_[index].port;
+	t.lan = true;
+	lanFocus_ = false;
+	menu_error.clear();
+	if (source_ == Source::Lan && link_ == Link::Connected && target_.host == t.host && target_.port == t.port) {
+		enterMain();
+		return;
+	}
+	menuAuto_ = true;
+	startLan(t);
+}
+
 void App::beginLanEdit() {
 	lanFocus_ = true;
 	if (source_ == Source::Localhost) {
@@ -304,6 +343,10 @@ void App::activateMenu(int item) {
 		case kMenuMore: openOverlay(Overlay::Sessions); break;
 		case kMenuRemote: openOverlay(Overlay::Remote); break;
 		default: {
+			if (item >= kMenuPeer) {
+				connectPeer(static_cast<std::size_t>(item - kMenuPeer));
+				break;
+			}
 			const auto index = static_cast<std::size_t>(item - 2);
 			if (index < sessions_.size()) {
 				openSession(sessions_[index]);
@@ -323,6 +366,12 @@ void App::MenuPick(std::string index) {
 	activateMenu(menuSel_);
 }
 
+void App::MenuPeer(std::string index) {
+	consumed_ = true;
+	menuSel_ = kMenuPeer + std::atoi(index.c_str());
+	activateMenu(menuSel_);
+}
+
 void App::MenuSession(std::string index) {
 	consumed_ = true;
 	menuSel_ = 2 + std::atoi(index.c_str());
@@ -332,7 +381,11 @@ void App::MenuSession(std::string index) {
 bool App::handleMenuKey(const Key& key) {
 	using K = rtxui::Event::Keyboard;
 
-	std::vector<int> items = {0, 1};
+	std::vector<int> items = {0};
+	for (std::size_t i = 0; i < peers_.size(); ++i) {
+		items.push_back(kMenuPeer + static_cast<int>(i));
+	}
+	items.push_back(1);
 	for (std::size_t i = 0; i < std::min<std::size_t>(kRecentSessions, sessions_.size()); ++i) {
 		items.push_back(static_cast<int>(2 + i));
 	}

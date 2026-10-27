@@ -17,6 +17,7 @@
 #include "net/remote.hpp"
 #include "core/store.hpp"
 #include "net/connection.hpp"
+#include "net/discovery.hpp"
 #include "ui/assets.hpp"
 #include "ui/textfield.hpp"
 #include "ui/views.hpp"
@@ -62,6 +63,7 @@ public:
 	std::string menu_rule, menu_error, menu_hint;
 	std::string menu_cls_remote;
 	std::vector<MenuSessionRow> menu_sessions;
+	std::vector<MenuSessionRow> menu_peers;
 	bool menu_no_sessions = false;
 
 	bool show_main = false;
@@ -113,6 +115,8 @@ public:
 
 	void MenuPick(std::string index);
 	void MenuSession(std::string index);
+	void MenuPeer(std::string index);
+	void connectPeer(std::size_t index);
 	void RowClick(std::string index);
 	void RowContext(std::string index);
 	void BarJump(std::string index);
@@ -253,6 +257,8 @@ private:
 	std::unique_ptr<ViewIndex> index_;
 	std::unique_ptr<Connection> connection_;
 	std::unique_ptr<SessionScanner> scanner_;
+	Discovery discovery_;
+	std::vector<Peer> peers_;
 	std::unique_ptr<RemoteClient> remote_;
 	std::unique_ptr<CsvLoader> loader_;
 
