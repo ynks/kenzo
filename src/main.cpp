@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 			return 0;
 		}
 		if (arg == "-v" || arg == "--version") {
-			std::println("kenzo 2.1");
+			std::println("kenzo 2.3");
 			return 0;
 		}
 		if (arg == "--reduced-motion") {
