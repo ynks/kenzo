@@ -90,3 +90,5 @@
 .rem-note { padding: 0 1; margin-bottom: 1; }
 .rem-note.bad { color: var(--red); }
 .dl-bar { color: var(--accent); padding: 0 1; margin-bottom: 1; white-space: nowrap; }
+
+.dv-stack { color: var(--accent); font-weight: bold; }

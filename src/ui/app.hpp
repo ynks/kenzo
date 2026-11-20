@@ -13,6 +13,7 @@
 
 #include "core/csv.hpp"
 #include "core/filter.hpp"
+#include "core/fold.hpp"
 #include "core/sessions.hpp"
 #include "net/remote.hpp"
 #include "core/store.hpp"
@@ -68,7 +69,7 @@ public:
 
 	bool show_main = false;
 	std::string main_cls, time_header = "Time";
-	int sink_w = 12, file_w = 24;
+	int sink_w = 12, file_w = 24, fold_w = 0;
 	std::vector<LogRow> rows;
 	bool rows_empty = false;
 	std::string empty_text;
@@ -106,7 +107,7 @@ public:
 	int ctx_x = 0, ctx_y = 0, ctx_sub_x = 0, ctx_sub_y = 0;
 	std::vector<CtxItem> ctx_items, ctx_sub_items;
 
-	std::string dv_bar_cls, dv_sev_cls, dv_sev, dv_sink, dv_pos, dv_time, dv_file, dv_layout, dv_msg_focus, dv_bt_focus, dv_rule,
+	std::string dv_bar_cls, dv_sev_cls, dv_sev, dv_sink, dv_pos, dv_stack, dv_time, dv_file, dv_layout, dv_msg_focus, dv_bt_focus, dv_rule,
 	    dv_bt_count, dv_bt_btn_cls;
 	std::vector<TextLine> dv_msg_lines, dv_det_lines, dv_bt_lines;
 	std::vector<BarCell> dv_msg_bar, dv_bt_bar;
@@ -189,6 +190,10 @@ private:
 	void runChord(char first, char second, int count);
 	void moveSel(long delta);
 	void setSel(std::size_t position);
+	void selectPos(std::size_t position);
+	void syncFold();
+	void toggleFold();
+	[[nodiscard]] std::size_t selectedPos() const;
 	void ensureVisible(bool center = false);
 	void scrollBy(long delta);
 	void goBottom();
@@ -242,6 +247,8 @@ private:
 	void buildContext();
 	bool handleContextKey(const Key& key);
 	void runContext(int item);
+	[[nodiscard]] std::size_t ctxCount() const;
+	[[nodiscard]] bool ctxGroupPos(std::size_t& position) const;
 	void runContextSub(int item);
 	[[nodiscard]] std::vector<StrId> visibleSinks() const;
 
@@ -255,6 +262,7 @@ private:
 	Options options_;
 	Store store_;
 	std::unique_ptr<ViewIndex> index_;
+	FoldMap fold_;
 	std::unique_ptr<Connection> connection_;
 	std::unique_ptr<SessionScanner> scanner_;
 	Discovery discovery_;

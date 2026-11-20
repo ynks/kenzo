@@ -80,22 +80,55 @@ std::size_t App::viewRows() const {
 }
 
 const LogRecord* App::selected() const {
-	if (index_->size() == 0 || sel_ >= index_->size()) {
+	if (fold_.rows() == 0 || sel_ >= fold_.rows()) {
 		return nullptr;
 	}
-	return &store_[(*index_)[sel_]];
+	return &store_[(*index_)[fold_.at(sel_).pos]];
+}
+
+std::size_t App::selectedPos() const {
+	return fold_.at(std::min(sel_, fold_.rows() ? fold_.rows() - 1 : 0)).pos;
+}
+
+void App::syncFold() {
+	const kenzo::Data& data = *store_.data();
+	fold_.sync(index_->size(), index_->epoch(), &data, [&](std::size_t pos) {
+		const LogRecord& rec = data[(*index_)[pos]];
+		const std::uint64_t key = rec.file == 0 ? 0 : (static_cast<std::uint64_t>(rec.file) << 32) | rec.line;
+		return FoldMap::Entry {key, (*index_)[pos]};
+	});
+}
+
+void App::selectPos(std::size_t position) {
+	syncFold();
+	setSel(fold_.rowOf(position));
+}
+
+void App::toggleFold() {
+	syncFold();
+	const FoldMap::Row row = fold_.at(sel_);
+	if (!row.grouped) {
+		toast("Nothing to fold here", "warn");
+		return;
+	}
+	fold_.toggle(row.pos);
+	sel_ = fold_.rowOf(row.pos);
+	lastViewSize_ = fold_.rows();
+	follow_ = sel_ + 1 == fold_.rows();
+	ensureVisible();
 }
 
 void App::followIfNeeded() {
-	const std::size_t n = index_->size();
+	syncFold();
+	const std::size_t n = fold_.rows();
 	const std::size_t h = viewRows();
 
 	if (index_->epoch() != lastEpoch_) {
 		lastEpoch_ = index_->epoch();
 		if (follow_) {
 			sel_ = n ? n - 1 : 0;
-		} else if (haveSelRecord_) {
-			sel_ = std::min(index_->lowerBound(static_cast<std::uint32_t>(selRecord_)), n ? n - 1 : 0);
+		} else if (haveSelRecord_ && index_->size() > 0) {
+			sel_ = fold_.rowOf(std::min(index_->lowerBound(static_cast<std::uint32_t>(selRecord_)), index_->size() - 1));
 		}
 	} else if (follow_ && n != lastViewSize_) {
 		sel_ = n ? n - 1 : 0;
@@ -115,12 +148,12 @@ void App::followIfNeeded() {
 	} else {
 		scrollTop_ = std::min(scrollTop_, maxTop);
 	}
-	selRecord_ = (*index_)[sel_];
+	selRecord_ = (*index_)[fold_.at(sel_).pos];
 	haveSelRecord_ = true;
 }
 
 void App::ensureVisible(bool center) {
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	const std::size_t h = viewRows();
 	if (n == 0) {
 		return;
@@ -137,7 +170,7 @@ void App::ensureVisible(bool center) {
 }
 
 void App::setSel(std::size_t position) {
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	if (n == 0) {
 		return;
 	}
@@ -147,7 +180,7 @@ void App::setSel(std::size_t position) {
 }
 
 void App::moveSel(long delta) {
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	if (n == 0) {
 		return;
 	}
@@ -156,7 +189,7 @@ void App::moveSel(long delta) {
 }
 
 void App::scrollBy(long delta) {
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	const std::size_t h = viewRows();
 	if (n == 0) {
 		return;
@@ -168,7 +201,7 @@ void App::scrollBy(long delta) {
 }
 
 void App::goBottom() {
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	follow_ = true;
 	if (n == 0) {
 		return;
@@ -185,24 +218,28 @@ void App::jumpToError(int direction) {
 		toast("No errors in view", "warn");
 		return;
 	}
+	syncFold();
+	const auto here = static_cast<std::uint32_t>(selectedPos());
+	const auto land = [&](std::uint32_t pos) {
+		fold_.expand(pos);
+		lastViewSize_ = fold_.rows();
+		setSel(fold_.rowOf(pos));
+		ensureVisible(true);
+	};
 	if (direction > 0) {
-		auto it = std::upper_bound(hot.begin(), hot.end(), static_cast<std::uint32_t>(sel_),
-		                           [](std::uint32_t pos, const auto& entry) { return pos < entry.first; });
+		auto it = std::upper_bound(hot.begin(), hot.end(), here, [](std::uint32_t pos, const auto& entry) { return pos < entry.first; });
 		for (; it != hot.end(); ++it) {
 			if (it->second >= kError) {
-				setSel(it->first);
-				ensureVisible(true);
+				land(it->first);
 				return;
 			}
 		}
 	} else {
-		auto it = std::lower_bound(hot.begin(), hot.end(), static_cast<std::uint32_t>(sel_),
-		                           [](const auto& entry, std::uint32_t pos) { return entry.first < pos; });
+		auto it = std::lower_bound(hot.begin(), hot.end(), here, [](const auto& entry, std::uint32_t pos) { return entry.first < pos; });
 		while (it != hot.begin()) {
 			--it;
 			if (it->second >= kError) {
-				setSel(it->first);
-				ensureVisible(true);
+				land(it->first);
 				return;
 			}
 		}
@@ -212,7 +249,7 @@ void App::jumpToError(int direction) {
 
 void App::buildRows() {
 	const kenzo::Data& data = *store_.data();
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	const std::size_t h = viewRows();
 
 	std::size_t sinkLen = 4;
@@ -229,12 +266,26 @@ void App::buildRows() {
 	const auto timeNeedles = relativeTime_ ? std::vector<std::string_view> {} : index_->query().highlights(Query::Field::Time);
 	std::vector<LogRow> built;
 	built.reserve(h);
+	std::size_t groupDigits = 0;
+	bool anyGroup = false;
 	for (std::size_t i = 0; i < h && scrollTop_ + i < n; ++i) {
-		const std::size_t pos = scrollTop_ + i;
-		const LogRecord& rec = store_[(*index_)[pos]];
+		const std::size_t at = scrollTop_ + i;
+		const FoldMap::Row place = fold_.at(at);
+		const LogRecord& rec = store_[(*index_)[place.pos]];
 		LogRow row;
-		row.cls = std::format("sev{}{}", rec.sev, pos == sel_ ? " sel" : "");
-		row.ptr = pos == sel_ ? "›" : " ";
+		row.cls = std::format("sev{}{}", rec.sev, at == sel_ ? " sel" : "");
+		row.ptr = at == sel_ ? "›" : " ";
+		anyGroup = anyGroup || place.grouped;
+		if (!place.grouped) {
+			row.fold.clear();
+		} else if (place.offset == 0) {
+			row.fold = place.folded ? "▶ " : "▼ ";
+			row.cls += " ghead";
+			row.grp = std::format("({})", place.len);
+			groupDigits = std::max(groupDigits, std::to_string(place.len).size());
+		} else {
+			row.fold = place.offset + 1 == place.len ? "┗━" : "┣━";
+		}
 		row.bar = rec.sev == kTrace ? " " : "▎";
 		row.tag = std::string(severityShort(rec.sev));
 		auto time = splitHit(relativeTime_ ? fmt::offsetTime(rec.ts, firstTs_) : fmt::clockTime(rec.ts), timeNeedles);
@@ -265,8 +316,9 @@ void App::buildRows() {
 		built.push_back(std::move(row));
 	}
 	rows = std::move(built);
+	fold_w = anyGroup ? static_cast<int>(groupDigits) + 4 : 0;
 
-	rows_empty = n == 0;
+	rows_empty = index_->size() == 0;
 	if (rows_empty) {
 		const bool filtered = !index_->query().empty() || !(index_->filter() == FilterState {});
 		if (store_.size() > 0 && filtered) {
@@ -283,10 +335,11 @@ void App::buildRows() {
 
 void App::buildBar() {
 	const std::size_t n = index_->size();
+	const std::size_t rowCount = fold_.rows();
 	const std::size_t h = viewRows();
 	std::vector<BarCell> cells(h);
-	if (n > h) {
-		const double scale = static_cast<double>(h) / static_cast<double>(n);
+	if (rowCount > h) {
+		const double scale = static_cast<double>(h) / static_cast<double>(rowCount);
 		const auto thumbTop = static_cast<std::size_t>(static_cast<double>(scrollTop_) * scale);
 		const auto thumbLen = std::max<std::size_t>(1, static_cast<std::size_t>(static_cast<double>(h) * scale + 0.5));
 		const auto& hot = index_->hot();
@@ -295,8 +348,9 @@ void App::buildBar() {
 			if (c >= thumbTop && c < thumbTop + thumbLen) {
 				cls = "th";
 			}
-			const auto lo = static_cast<std::uint32_t>(c * n / h);
-			const auto hi = static_cast<std::uint32_t>((c + 1) * n / h);
+			const std::size_t loRow = c * rowCount / h, hiRow = (c + 1) * rowCount / h;
+			const auto lo = static_cast<std::uint32_t>(fold_.at(loRow).pos);
+			const auto hi = static_cast<std::uint32_t>(hiRow >= rowCount ? n : fold_.at(hiRow).pos);
 			auto it = std::lower_bound(hot.begin(), hot.end(), lo, [](const auto& e, std::uint32_t v) { return e.first < v; });
 			int worst = -1;
 			for (int guard = 0; it != hot.end() && it->first < hi && guard < 64; ++it, ++guard) {
@@ -360,7 +414,7 @@ void App::buildStatus() {
 
 	follow_text = follow_ ? "● follow" : "○ paused";
 	follow_cls = follow_ ? "on" : "";
-	st_pending = chord_ ? std::string(1, chord_) + "…" : std::string();
+	st_pending = chord_ ? (chord_ == ' ' ? std::string("␣") : std::string(1, chord_)) + "…" : std::string();
 	int levelsWidth = static_cast<int>(cnt0.size() + cnt1.size() + cnt2.size() + cnt3.size()) + 24;
 	const bool shortLabels = levelsWidth > cols_;
 	cnt_label0 = shortLabels ? "T" : "TRC";
@@ -456,6 +510,7 @@ void App::undoLast() {
 	if (clearedRecently_) {
 		store_.undoClear();
 		clearedRecently_ = false;
+		fold_.forget();
 		index_->reset(store_.data());
 		firstTs_ = store_.size() ? store_[0].ts : 0;
 		follow_ = true;
@@ -477,6 +532,7 @@ void App::clearAll() {
 		return;
 	}
 	store_.clear();
+	fold_.forget();
 	index_->reset(store_.data());
 	clearedRecently_ = true;
 	clearedAt_ = Clock::now();
@@ -494,7 +550,7 @@ void App::RowClick(std::string index) {
 		return;
 	}
 	const std::size_t pos = scrollTop_ + static_cast<std::size_t>(std::atoi(index.c_str()));
-	if (pos >= index_->size()) {
+	if (pos >= fold_.rows()) {
 		return;
 	}
 	const auto now = Clock::now();
@@ -504,7 +560,7 @@ void App::RowClick(std::string index) {
 	searchFocus_ = false;
 	setSel(pos);
 	if (second) {
-		openDetail(pos);
+		openDetail(fold_.at(pos).pos);
 	}
 }
 
@@ -514,17 +570,17 @@ void App::RowContext(std::string index) {
 		return;
 	}
 	const std::size_t pos = scrollTop_ + static_cast<std::size_t>(std::atoi(index.c_str()));
-	if (pos >= index_->size()) {
+	if (pos >= fold_.rows()) {
 		return;
 	}
 	setSel(pos);
 	contextRequested_ = true;
-	contextPosition_ = pos;
+	contextPosition_ = fold_.at(pos).pos;
 }
 
 void App::BarJump(std::string index) {
 	consumed_ = true;
-	const std::size_t n = index_->size();
+	const std::size_t n = fold_.rows();
 	const auto h = static_cast<double>(viewRows());
 	if (n == 0 || overlay_ != Overlay::None) {
 		return;
@@ -555,7 +611,7 @@ void App::runChord(char first, char second, int /*count*/) {
 		ensureVisible(true);
 	} else if (first == 'z' && (second == 'z' || second == 't' || second == 'b')) {
 		const std::size_t h = viewRows();
-		const std::size_t n = index_->size();
+		const std::size_t n = fold_.rows();
 		if (second == 'z') {
 			ensureVisible(true);
 		} else if (second == 't') {
@@ -566,7 +622,7 @@ void App::runChord(char first, char second, int /*count*/) {
 	} else if (first == 'h' && rec != nullptr) {
 		const int which = second == 'f' ? 0 : second == 'h' ? 1 : second == 's' ? 2 : -1;
 		if (which >= 0) {
-			ctxPosition_ = (*index_)[sel_];
+			ctxPosition_ = (*index_)[selectedPos()];
 			runContextSub(which);
 		}
 	} else if (first == 'y' && rec != nullptr) {
@@ -596,6 +652,7 @@ bool App::handleTableKey(const Key& key) {
 		return true;
 	}
 
+	syncFold();
 	const std::size_t h = viewRows();
 	if (key.is(K::Escape)) {
 		if (!search_.empty()) {
@@ -627,18 +684,18 @@ bool App::handleTableKey(const Key& key) {
 	} else if (key.is('H')) {
 		setSel(scrollTop_);
 	} else if (key.is('M')) {
-		setSel(scrollTop_ + std::min(h, index_->size() - scrollTop_) / 2);
+		setSel(scrollTop_ + std::min(h, fold_.rows() - scrollTop_) / 2);
 	} else if (key.is('L')) {
-		setSel(scrollTop_ + std::min(h, index_->size() - scrollTop_) - 1);
+		setSel(scrollTop_ + std::min(h, fold_.rows() - scrollTop_) - 1);
 	} else if (key.is('/')) {
 		searchFocus_ = true;
 	} else if (key.is(K::Return) || key.is('o') || key.is('l') || key.is(K::ArrowRight)) {
 		if (selected() != nullptr) {
-			openDetail(sel_);
+			openDetail(selectedPos());
 		}
 	} else if (key.is('m') || key.is(' ')) {
 		if (selected() != nullptr) {
-			openContext(sel_, 12, 1 + static_cast<int>(sel_ - scrollTop_));
+			openContext(selectedPos(), 12, 1 + static_cast<int>(sel_ - scrollTop_));
 		}
 	} else if (key.is('s')) {
 		openOverlay(Overlay::Sinks);

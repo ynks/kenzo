@@ -5,7 +5,7 @@
       <span class="h-sev">Sev</span><span class="h-time" onclick="ToggleTime">{time_header}</span>
       <span class="h-sink" style="width: {sink_w};">Sink</span>
       <span class="h-file" style="width: {file_w};">File</span>
-      <span class="h-msg">Message</span>
+      <span class="h-gut" style="width: {fold_w};"></span><span class="h-msg">Message</span>
     </div>
     <div class="tbody">
       <div class="rows">
@@ -16,7 +16,7 @@
             <span class="c-time b2"><span>{r.t0}</span><span class="hit">{r.t1}</span><span>{r.t2}</span></span>
             <span class="c-sink b3" style="width: {sink_w};"><span>{r.sk0}</span><span class="hit">{r.sk1}</span><span>{r.sk2}</span></span>
             <span class="c-file b4" style="width: {file_w};"><span>{r.f0}</span><span class="hit">{r.f1}</span><span>{r.f2}</span></span>
-            <span class="c-msg b5"><span>{r.m0}</span><span class="hit">{r.m1}</span><span>{r.m2}</span><span class="hit">{r.m3}</span><span>{r.m4}</span><span class="hit">{r.m5}</span><span>{r.m6}</span><span class="c-more">{r.more}</span></span>
+            <span class="c-gut b5" style="width: {fold_w};"><span class="c-fold">{r.fold}</span><span class="c-grp">{r.grp}</span></span><span class="c-msg b5"><span>{r.m0}</span><span class="hit">{r.m1}</span><span>{r.m2}</span><span class="hit">{r.m3}</span><span>{r.m4}</span><span class="hit">{r.m5}</span><span>{r.m6}</span><span class="c-more">{r.more}</span></span>
           </div>
         </for>
         <if condition="{rows_empty}"><div class="empty">{empty_text}</div></if>

@@ -352,7 +352,8 @@ void App::buildHelp() {
 	    {"", "", ""},
 	    {"", "Logs", "head"},
 	    {"enter  o  l", "open details", ""},
-	    {"space  m", "context menu (also right-click): open, copy, hide", ""},
+	    {"space  m", "context menu (also right-click): open, copy, hide, fold", ""},
+	    {"space f", "fold / unfold consecutive logs from the same file:line", ""},
 	    {"yy  ym  yb", "copy entry / message / backtrace", ""},
 	    {"hf  hh  hs", "hide this severity / this sink / this severity on this sink", ""},
 	    {"/", "search: words, \"phrases\", -exclude, sink: file: msg: sev: bt: time:", ""},
@@ -400,8 +401,19 @@ void App::openContext(std::size_t position, int x, int y) {
 	ctxCopySub_ = false;
 	show_ctx_sub = false;
 	ctx_x = std::clamp(x, 0, std::max(0, cols_ - ctxW_ - 1));
-	ctx_y = std::clamp(y, 0, std::max(0, rowsTotal_ - 5));
+	ctx_y = std::clamp(y, 0, std::max(0, rowsTotal_ - 6));
 	overlay_ = Overlay::Context;
+}
+
+bool App::ctxGroupPos(std::size_t& position) const {
+	position = index_->lowerBound(static_cast<std::uint32_t>(ctxPosition_));
+	std::size_t start = 0, len = 0;
+	return position < index_->size() && (*index_)[position] == ctxPosition_ && fold_.groupOf(position, start, len);
+}
+
+std::size_t App::ctxCount() const {
+	std::size_t position = 0;
+	return ctxGroupPos(position) ? 4 : 3;
 }
 
 void App::buildContext() {
@@ -416,6 +428,11 @@ void App::buildContext() {
 		return CtxItem {!ctxInSub_ && ctxSel_ == i ? "sel" : "", label, key, submenu ? "▸" : ""};
 	};
 	ctx_items = {item(0, "Open details", "o"), item(1, "Copy", "y", true), item(2, "Hide", "h", true)};
+	std::size_t groupPos = 0;
+	if (ctxGroupPos(groupPos)) {
+		const bool folded = fold_.at(fold_.rowOf(groupPos)).folded;
+		ctx_items.push_back(item(3, folded ? "Unfold group" : "Fold group", "f"));
+	}
 
 	const std::string sev(severityName(rec.sev));
 	const std::string sink = std::string(data.sinks().get(rec.sink));
@@ -455,6 +472,15 @@ void App::runContext(int item) {
 			ctxCopySub_ = item == 1;
 			ctxSubSel_ = 0;
 			break;
+		case 3: {
+			std::size_t pos = 0;
+			if (ctxGroupPos(pos)) {
+				closeOverlay();
+				selectPos(pos);
+				toggleFold();
+			}
+			break;
+		}
 		default: break;
 	}
 }
@@ -528,7 +554,7 @@ bool App::handleContextKey(const Key& key) {
 	if (key.is(K::Escape) || key.is('q') || key.is('m')) {
 		closeOverlay();
 	} else if (key.is('j') || key.is(K::ArrowDown)) {
-		ctxSel_ = std::min<std::size_t>(2, ctxSel_ + 1);
+		ctxSel_ = std::min<std::size_t>(ctxCount() - 1, ctxSel_ + 1);
 	} else if (key.is('k') || key.is(K::ArrowUp)) {
 		ctxSel_ = ctxSel_ ? ctxSel_ - 1 : 0;
 	} else if (key.is(K::Return) || key.is('l') || key.is(' ') || key.is(K::ArrowRight)) {
@@ -539,6 +565,8 @@ bool App::handleContextKey(const Key& key) {
 		runContext(2);
 	} else if (key.is('y')) {
 		runContext(1);
+	} else if (key.is('f') && ctxCount() == 4) {
+		runContext(3);
 	} else {
 		return false;
 	}
@@ -547,7 +575,7 @@ bool App::handleContextKey(const Key& key) {
 
 void App::CtxPick(std::string index) {
 	consumed_ = true;
-	ctxSel_ = static_cast<std::size_t>(std::clamp(std::atoi(index.c_str()), 0, 2));
+	ctxSel_ = static_cast<std::size_t>(std::clamp(std::atoi(index.c_str()), 0, static_cast<int>(ctxCount()) - 1));
 	runContext(static_cast<int>(ctxSel_));
 }
 

@@ -116,7 +116,7 @@ int main() try {
 		if (key == 'm') check(copied == "Shader failed", "ym copies message");
 		if (key == 'b') check(copied.starts_with("Frame 0") && copied.find("Frame 1") != std::string::npos, "yb copies backtrace");
 	}
-	input(" ");
+	input("m");
 	screen.Click(app->ctx_x + 3, app->ctx_y + 2);
 	settle();
 	check(app->show_ctx_sub && app->ctx_sub_items[1].key == "ym", "mouse opens copy submenu");

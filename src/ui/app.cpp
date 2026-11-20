@@ -54,6 +54,7 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(main_cls);
 	Bind(time_header);
 	Bind(sink_w);
+	Bind(fold_w);
 	Bind(file_w);
 	Bind(rows);
 	Bind(rows_empty);
@@ -160,6 +161,7 @@ App::App(Options options) : options_(std::move(options)) {
 	Bind(dv_sev);
 	Bind(dv_sink);
 	Bind(dv_pos);
+	Bind(dv_stack);
 	Bind(dv_time);
 	Bind(dv_file);
 	Bind(dv_layout);
@@ -372,6 +374,7 @@ void App::resetStore(bool announce) {
 	store_.clear();
 	store_.dropUndo();
 	clearedRecently_ = false;
+	fold_.forget();
 	index_->reset(store_.data());
 	sel_ = 0;
 	scrollTop_ = 0;
@@ -545,7 +548,7 @@ void App::handleMouse(const rtxui::Event::Mouse& mouse) {
 		if (show_ctx_sub && x >= ctx_sub_x && x < ctx_sub_x + 34 && y > ctx_sub_y && y <= ctx_sub_y + 3) {
 			ctxInSub_ = true;
 			ctxSubSel_ = static_cast<std::size_t>(y - ctx_sub_y - 1);
-		} else if (x >= ctx_x && x < ctx_x + 28 && y > ctx_y && y <= ctx_y + 3) {
+		} else if (x >= ctx_x && x < ctx_x + 28 && y > ctx_y && y <= ctx_y + static_cast<int>(ctxCount())) {
 			const auto next = static_cast<std::size_t>(y - ctx_y - 1);
 			if (next != ctxSel_ || next == 0) {
 				ctxInSub_ = false;

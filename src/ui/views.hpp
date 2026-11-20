@@ -33,7 +33,7 @@ inline void Fields(const MenuSessionRow& v, rtxui::FieldSink& out) {
 }
 
 struct LogRow {
-	std::string cls, ptr, bar, tag, t0, t1, t2, sk0, sk1, sk2, f0, f1, f2, m0, m1, m2, m3, m4, m5, m6, more;
+	std::string cls, ptr, bar, tag, t0, t1, t2, sk0, sk1, sk2, f0, f1, f2, m0, m1, m2, m3, m4, m5, m6, more, fold, grp;
 	bool operator==(const LogRow&) const = default;
 };
 inline void Fields(const LogRow& v, rtxui::FieldSink& out) {
@@ -58,6 +58,8 @@ inline void Fields(const LogRow& v, rtxui::FieldSink& out) {
 	out("m5", v.m5);
 	out("m6", v.m6);
 	out("more", v.more);
+	out("fold", v.fold);
+	out("grp", v.grp);
 }
 
 struct BarCell {

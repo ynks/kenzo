@@ -83,7 +83,7 @@ std::vector<BarCell> makeBar(std::size_t total, std::size_t visible, std::size_t
 void App::openDetail(std::size_t position) {
 	if (position >= index_->size()) return;
 	detailPos_ = position;
-	setSel(position);
+	selectPos(position);
 	detailPane_ = 0;
 	detailDirty_ = true;
 	dvMsgTop_ = dvBtTop_ = 0;
@@ -106,6 +106,9 @@ void App::buildDetail() {
 	const auto sink = data.sinks().get(rec.sink);
 	dv_sink = sink.empty() ? "(no sink)" : std::string(sink);
 	dv_pos = std::format("{} / {}", detailPos_ + 1, n);
+	syncFold();
+	std::size_t stackStart = 0, stackLen = 0;
+	dv_stack = fold_.groupOf(detailPos_, stackStart, stackLen) ? std::format("({}/{})", detailPos_ - stackStart + 1, stackLen) : std::string();
 	dv_time = fmt::fullTime(rec.ts);
 	const auto file = data.files().get(rec.file);
 	dv_file = file.empty() ? "—" : std::format("{}:{}", file, rec.line);
