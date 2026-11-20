@@ -13,23 +13,23 @@ std::optional<std::filesystem::path> envPath(const char* name) {
 	return std::filesystem::path(value);
 }
 
-}  // namespace
+}
 
 std::optional<std::filesystem::path> sessionLogDir() {
 #ifdef _WIN32
 	auto base = envPath("APPDATA");
 #else
-	auto base = envPath("XDG_CONFIG_HOME");
+	auto base = envPath("XDG_DATA_HOME");
 	if (!base) {
 		if (auto home = envPath("HOME")) {
-			base = *home / ".config";
+			base = *home / ".local" / "share";
 		}
 	}
 #endif
 	if (!base) {
 		return std::nullopt;
 	}
-	return *base / "ToastEngine" / "logs";
+	return *base / "nullptr-studios" / "toast-engine" / "logs";
 }
 
 std::optional<std::filesystem::path> remoteLogDir() {
@@ -44,4 +44,4 @@ std::string pathUtf8(const std::filesystem::path& path) {
 	return std::string(text.begin(), text.end());
 }
 
-}  // namespace kenzo
+}
